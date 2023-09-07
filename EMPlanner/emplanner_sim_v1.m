@@ -1,37 +1,10 @@
-%% 此文件用来测试单一path trajectory 规划
-
-%% 地图初始化
-%直线构成
-ReferenceLine_1_X = 0 : 2 : 1000;
-totle_num = length(ReferenceLine_1_X);
-ReferenceLine_1_Y = zeros(1,totle_num);
-RL1_Left_LaneMarker = zeros(1,totle_num) + 2;
-RL1_Right_LaneMarker = zeros(1,totle_num) - 2;
-ReferenceLine_2_Y = zeros(1,totle_num) + 4;
-RL2_Left_LaneMarker = zeros(1,totle_num) + 6;
-% 获得车道线
-%车道1
-lane_1_reference_line_x =  ReferenceLine_1_X';
-lane_1_reference_line_y =  ReferenceLine_1_Y';
-[line_1_reference_line_heading , lane_1_reference_line_kappa] = CalcPathHeadingAndKappa(...
-    lane_1_reference_line_x, lane_1_reference_line_y);
-%车道2
-lane_2_reference_line_x =  ReferenceLine_1_X';
-lane_2_reference_line_y =  ReferenceLine_2_Y';
-[line_2_reference_line_heading , lane_2_reference_line_kappa] = CalcPathHeadingAndKappa(...
-    lane_2_reference_line_x, lane_2_reference_line_y);
-%添加自车的初始状态以及静态障碍物
-% 显示全局路径
-figure(1);
-plot(ReferenceLine_1_X,ReferenceLine_1_Y,'b--',  ReferenceLine_1_X,RL1_Left_LaneMarker,'k-',...
-    ReferenceLine_1_X,RL1_Right_LaneMarker,'k-',...
-    ReferenceLine_1_X,ReferenceLine_2_Y,'b--',ReferenceLine_1_X,RL2_Left_LaneMarker,'k-');
-axis([-10,300, -50, 50])
-%
+%% 此文件用来测试单一 path trajectory 规划，
+% 自车前方有多个静态的障碍物，根据apollo的public rode planner产生凸空间 然后qp平滑轨迹点
+% 规划完毕后 利用single_trajectory_display.m查看是否避障
 %% 自车和静态障碍物信息
 ego = struct('x',0,'y',0,'vx',0,'vy',0,'ax',0,'ay',0,'length',0,'width',0,'heading',0,'kappa',0);
-ego.x = 5;
-ego.y = 0;
+ego.x = 5;%
+ego.y = 0;%
 ego.vx = 5;
 ego.vy = 0;
 ego.ax = 0;
@@ -497,14 +470,14 @@ end
 % add points增密
 [qp_path_s_final,qp_path_l_final, qp_path_dl_final,qp_path_ddl_final] =...
     add_points_path(qp_path_s,qp_path_l,qp_path_dl,qp_path_ddl);
-% frenet坐标系转到世界坐标系
-[x_set,y_set,heading_set,kappa_set] = Frenet2Cartesian_Path(...
-    qp_path_s_final,qp_path_l_final, qp_path_dl_final,qp_path_ddl_final,...
-    plan_referenceline_x,plan_referenceline_y,plan_referenceline_heading, plan_referenceline_kappa,plan_referenceline_s);
+% frenet坐标系转到世界坐标系 获得初始的路径
+[trajectory_x_init, trajectory_y_init, trajectory_heading_init, trajectory_kappa_init] = Frenet2Cartesian_Path(...  
+ qp_path_s,qp_path_l, qp_path_dl,qp_path_ddl,...
+ plan_referenceline_x,plan_referenceline_y,plan_referenceline_heading, plan_referenceline_kappa,plan_referenceline_s);
 
-%% 显示
+%% 显示规划的避障静态目标
 %显示规划路径参考线plan_referenceline
-figure(3);
+figure(2);
 plot(plan_referenceline_x, plan_referenceline_y, 'g--');
 dp_tra_s = zeros(80,1);
 dp_tra_s = dp_path_s + ego.x;
@@ -518,7 +491,7 @@ end
 plot(ReferenceLine_1_X,ReferenceLine_1_Y,'b--',  ReferenceLine_1_X,RL1_Left_LaneMarker,'k-',...
 ReferenceLine_1_X,RL1_Right_LaneMarker,'k-',...
 ReferenceLine_1_X,ReferenceLine_2_Y,'b--',ReferenceLine_1_X,RL2_Left_LaneMarker,'k-',...
-x_set,y_set,'b.',...
+trajectory_x_init,trajectory_y_init,'b.',...
 dp_tra_s,dp_path_l_min,'r.',dp_tra_s,dp_path_l_max,'r.');
 
 %ego

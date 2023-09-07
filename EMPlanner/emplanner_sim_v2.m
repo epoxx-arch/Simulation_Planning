@@ -1,5 +1,6 @@
 %% 此文件用来测试单一path trajectory 规划
-
+% emplanner_sim_v2 是emplanner_sim_v1的增加 
+% 场景也是单车道 单个障碍物 有一个闭环的效果
 %% 地图初始化
 %直线构成
 ReferenceLine_1_X = 0 : 2 : 1000;
@@ -47,7 +48,7 @@ static_objects_set = repmat(object,static_object_num,1);
 %static object 1
 static_objects_set(1).valid = 1;
 static_objects_set(1).x = 10;
-static_objects_set(1).y = -3;
+static_objects_set(1).y = -2;
 static_objects_set(1).v = 0;
 static_objects_set(1).heading = 0/180*pi;
 static_objects_set(1).length = 4;
@@ -110,7 +111,7 @@ for i = 1:length(static_objects_set)
     Boxyy(2) = objPosY + objWidth/2*cos(objHeading) - objLength/2*sin(objHeading);    
     patch(Boxyx,Boxyy,'green');
 end
-
+%% time 30个周期 类似于闭环仿真
 for time = 1:30
 
 %% 计算投影点
@@ -503,7 +504,7 @@ end
 [x_set,y_set,heading_set,kappa_set] = Frenet2Cartesian_Path(...
     qp_path_s_final,qp_path_l_final, qp_path_dl_final,qp_path_ddl_final,...
     plan_referenceline_x,plan_referenceline_y,plan_referenceline_heading, plan_referenceline_kappa,plan_referenceline_s);
-%% 执行 5m/s 5个点
+%% 执行 5m/s 5个点 每个周期都更新 暂时取5
 ego.x = x_set(5);
 ego.y = y_set(5);
 ego.heading = heading_set(5);
@@ -558,7 +559,7 @@ for j = 1:length(static_objects_set)
     Boxyy(2) = objPosY + objWidth/2*cos(objHeading) - objLength/2*sin(objHeading);    
     patch(Boxyx,Boxyy,'black');
 end
-axis([ego.x-10,ego.x + 80, -8, 8]);%根据自车定义范围坐标范围
+axis([-10,90, -20, 20]);%根据自车定义范围坐标范围
 
 pause(0.2);
 

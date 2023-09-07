@@ -1,16 +1,15 @@
 
-for i = 1:length(x_set - 10)
+for i = 1:length(trajectory_x_init - 10)
     plot(ReferenceLine_1_X,ReferenceLine_1_Y,'b--',  ReferenceLine_1_X,RL1_Left_LaneMarker,'k-',...
     ReferenceLine_1_X,RL1_Right_LaneMarker,'k-',...
     ReferenceLine_1_X,ReferenceLine_2_Y,'b--',ReferenceLine_1_X,RL2_Left_LaneMarker,'k-',...
-    x_set,y_set,'b.',...
-    dp_tra_s,dp_path_l_min,'r.',dp_tra_s,dp_path_l_max,'r.');
+    trajectory_x_init,trajectory_y_init,'b.');
     %ego
     objWidth = ego.width;
     objLength = ego.length;
-    objPosX = x_set(i);
-    objPosY = y_set(i);
-    objHeading = heading_set(i);
+    objPosX = trajectory_x_init(i);
+    objPosY = trajectory_y_init(i);
+    objHeading = trajectory_heading_init(i);
     Boxyx(3) = objPosX - objWidth/2*sin(objHeading) + objLength/2*cos(objHeading);
     Boxyy(3) = objPosY + objWidth/2*cos(objHeading) + objLength/2*sin(objHeading);
     Boxyx(4) = objPosX + objWidth/2*sin(objHeading) + objLength/2*cos(objHeading);
@@ -37,6 +36,6 @@ for i = 1:length(x_set - 10)
         Boxyy(2) = objPosY + objWidth/2*cos(objHeading) - objLength/2*sin(objHeading);    
         patch(Boxyx,Boxyy,'black');
     end
-    axis([x_set(i)-10, x_set(i) + 30, -8, 8]);%根据自车定义范围坐标范围
+    axis([-10, 80, -30, 30]);%根据自车定义范围坐标范围
     pause(0.2);
 end

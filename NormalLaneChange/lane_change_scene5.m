@@ -8,8 +8,8 @@ JerkLimitMax = 3;
 JerkLimitMin = -4;
 AccLimitMax = 2.4;
 AccLimitMin = -3.5;
-SearchSOffset = 6; % 10米
-VLimitMax = 30;
+SearchSOffset = 0; % 10米
+VLimitMax = 28;
 VLimitMin = 12;
 CrashDeceToFront = 0.8;% -0.6m/s
 CrashDeceToRear = 0.6;% -0.6m/s
@@ -19,17 +19,18 @@ kTimeRangeY = [0  0  0.4 1.0 1.4  2.2];
 kTimeRangeX = [3  4   5   6   7    8];
 kEgoLength = 5;
 %% side vehicle
-velocity_side_front = 22;
-position_side_front = 45;
-velocity_side_rear = 23;
-position_side_rear = -20;
+velocity_side_front = 22;%侧前车速度
+position_side_front = 60;%侧前车位置
+velocity_side_rear = 20;%侧后车速度  
+position_side_rear = 10;%侧后车位置
 % front vehicle
-velocity_front = 20;
-position_front = 35;
+velocity_front = 25;%前车速度
+position_front = 80;%前车位置
 
 ego_pos = 0;
-ego_v = 28;
+ego_v = 24;
 ego_a = 0;
+
 tra_score = 100;
 tra_jerk_min = 4;% default
 tra_result = false;
@@ -43,8 +44,8 @@ for ti = 3 : 8 % time i is 3 4 5 6 7 8s
     prediction_position_side_front = velocity_side_front * ti + position_side_front;
     prediction_position_side_rear = velocity_side_rear * ti + position_side_rear;
     safe_front = prediction_position_front - max(velocity_front*0.5, 8);
-    safe_side_front = prediction_position_side_front - velocity_side_front * 0.8;
-    safe_side_rear = prediction_position_side_rear + velocity_side_rear * 0.8;
+    safe_side_front = prediction_position_side_front - velocity_side_front * 0.6;
+    safe_side_rear = prediction_position_side_rear + velocity_side_rear * 0.6;
     % anchor point is end state of lane keep
     postion_anchor = prediction_position_side_front - velocity_side_front * 1.6;
     velocity_anchor = velocity_side_front;

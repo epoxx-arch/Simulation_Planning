@@ -9,12 +9,12 @@ JerkLimitMax = 3;
 JerkLimitMin = -4;
 AccLimitMax = 2.4;
 AccLimitMin = -3.5;
-SearchSOffset = 6; % 10米
+SearchSOffset = 2; % 米
 VLimitMax = 30;
 VLimitMin = 12;
 %
-CrashDeceToFront = 0.8;% -0.6m/s
-CrashDeceToRear = 0.6;% -0.6m/s
+CrashDeceToFront = 1.0;% -0.6m/s
+CrashDeceToRear = 0.8;% -0.6m/s
 kJerkRangeY = [0 0 0.2 0.8 2];
 kJerkRangeX = [0 1  2   3  4];
 kTimeRangeY = [0  0  0.4 1.0 1.4  2.2];
@@ -24,15 +24,15 @@ kVMaxRangeX = [0   5    10    20  30];
 kEgoLength = 5;
 %% side vehicle
 velocity_side_front = 22;
-position_side_front = 45;
-velocity_side_rear = 23;
-position_side_rear = -20;
+position_side_front = 60;
+velocity_side_rear = 20;
+position_side_rear = -5;
 % front vehicle
 velocity_front = 20;
-position_front = 35;
+position_front = 120;
 %ego
 ego_pos = 0;
-ego_v = 28;
+ego_v = 25;
 ego_a = 0;
 %%
 tra_score = 100;
@@ -49,8 +49,8 @@ for ti = 3 : 8 % time i is 3 4 5 6 7 8s
     prediction_position_side_front = velocity_side_front * ti + position_side_front;% ti后的时刻侧前车的位置
     prediction_position_side_rear = velocity_side_rear * ti + position_side_rear;% ti后侧候车的位置
     safe_front = prediction_position_front - max(velocity_front*0.5, 8);%和前车的安全距离
-    safe_side_front = prediction_position_side_front - velocity_side_front * 0.8;%和侧前车的安全距离
-    safe_side_rear = prediction_position_side_rear + velocity_side_rear * 0.8;%和侧后车的安全距离
+    safe_side_front = prediction_position_side_front - velocity_side_front * 0.6;%和侧前车的安全距离
+    safe_side_rear = prediction_position_side_rear + velocity_side_rear * 0.6;%和侧后车的安全距离
     % anchor point is end state of lane keep 
     %锚点 自车cut in 目标车道后，进行lane keep 跟随前车
     %跟车的time gap 1.6秒 跟车的速度是前车
@@ -116,6 +116,7 @@ if tra_result == true
         accelerate_arr(i) = Evaluate(tra_coef, 2, i*0.1);
         jerk_arr(i) = Evaluate(tra_coef, 3, i*0.1);    
     end
+    cut_in_s = position_arr(tra_num);
     figure(1);
     plot(time_arr,position_arr);
     title('距离S');

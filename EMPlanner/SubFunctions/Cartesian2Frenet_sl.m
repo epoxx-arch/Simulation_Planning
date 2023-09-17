@@ -27,14 +27,14 @@ end
 
 function s = CalcSFromIndex2S(index2s,path_x,path_y,proj_x,proj_y,proj_match_point_index)
   %该函数将计算当指定index2s的映射关系后，计算点proj_x,proj_y的弧长
-  vector_1 = [proj_x;proj_y] - [path_x(proj_match_point_index);path_y(proj_match_point_index)];
+  vector_1 = [proj_x; proj_y] - [path_x(proj_match_point_index); path_y(proj_match_point_index)];
   %这里要考虑的更全面一些，因为要考虑到proj_match_point_index有可能在path的起点或终点
   if (proj_match_point_index < length(path_x))
-      vector_2 = [path_x(proj_match_point_index + 1);path_y(proj_match_point_index + 1)] - ...
-          [path_x(proj_match_point_index);path_y(proj_match_point_index)];
+      vector_2 = [path_x(proj_match_point_index + 1); path_y(proj_match_point_index + 1)] - ...
+          [path_x(proj_match_point_index); path_y(proj_match_point_index)];
   else
-      vector_2 = [path_x(proj_match_point_index);path_y(proj_match_point_index)] - ...
-          [path_x(proj_match_point_index - 1);path_y(proj_match_point_index - 1)];
+      vector_2 = [path_x(proj_match_point_index); path_y(proj_match_point_index)] - ...
+          [path_x(proj_match_point_index - 1); path_y(proj_match_point_index - 1)];
   end
   
   if vector_1'*vector_2 > 0

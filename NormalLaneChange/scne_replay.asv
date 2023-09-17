@@ -4,9 +4,8 @@ LaneLength = 800;%路长800米
 global_path_x = 0: 0.2 : LaneLength;%
 num1 = uint16(length(global_path_x));%计算多少个点
 global_path_y = zeros(1,num1);
-leftLaneMarker = global_path_y + LaneWidth/2;%左车道线y值 +2
-rightLaneMarker = global_path_y - LaneWidth/2; 
-rightcenterline = global_path_y - LaneWidth;
+leftLaneMarker = global_path_y + LaneWidth;%左车道线的y坐标值
+rightLaneMarker = global_path_y - LaneWidth; 
 leftleftLaneMarker = leftLaneMarker + LaneWidth;
 rightrightLaneMarker = rightLaneMarker - LaneWidth;
 
@@ -31,9 +30,7 @@ trajectory_kappa = zeros(100,1);
 
 % 循环闭环仿真
 for i = 1 : tra_num 
-    plot(global_path_x,global_path_y,'b--',  global_path_x,leftLaneMarker,'k-', global_path_x,rightLaneMarker,'k--',...
-        global_path_x,rightcenterline,'b--',global_path_x,rightrightLaneMarker,'k-');
-    
+    plot(global_path_x,global_path_y,'b--',  global_path_x,leftLaneMarker,'k-', global_path_x,rightLaneMarker,'k-');
     EgoWidth = 2;%车宽
     EgoLength = 5;
     if ego_state == 1
@@ -130,7 +127,7 @@ for i = 1 : tra_num
         for j = 2:n
             path_s(j) = sqrt((path_x(j) - path_x(j-1))^2 + (path_y(j) - path_y(j-1))^2) + path_s(j-1);
         end
-        s = position_arr(1,i:end) - start_s;
+        s = position_arr(1,i:end) - position_arr(1,i);
         index = n;
         % speed and path stitch
         num = length(s);
@@ -138,7 +135,7 @@ for i = 1 : tra_num
             trajectory_x(k) = interp1(path_s(1:index),path_x(1: index), s(k));
             trajectory_y(k) = interp1(path_s(1:index),path_y(1: index), s(k));
             trajectory_heading(k) = interp1(path_s(1:index),path_heading(1:index), s(k));
-            trajectory_kappa(k) = interp1(path_s(1:index),path_kappa(1:index), s(k));
+            trajectory_kappa(k) = interp1(path_s(1:index),trajectory_kappa_init(1:index), s(k));
         end
        end
    end

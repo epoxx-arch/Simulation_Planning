@@ -1,114 +1,68 @@
-%% scenery side front 1 and side rear 1
-%约束限制和权重
-JerkWeight = 60;
-VMaxWeight = 40;
-TimeWeight = 60;
-JerkLimitRange = 4;
-TimeRange = 8;
+%% 跟随前车
+
+%% 约束限制和权重
+JerkWeight = 10;
+
 JerkLimitMax = 3;
-JerkLimitMin = -4;
-AccLimitMax = 2.4;
-AccLimitMin = -3.5;
-SearchSOffset = 2; % 米
+JerkLimitMin = -5;
+AccLimitMax = 2.0;
+AccLimitMin = -5.5;
+
 VLimitMax = 30;
 VLimitMin = 12;
-%
-CrashDeceToFront = 1.0;% -0.6m/s
-CrashDeceToRear = 0.8;% -0.6m/s
+
 kJerkRangeY = [0 0 0.2 0.8 2];
 kJerkRangeX = [0 1  2   3  4];
-kTimeRangeY = [0  0  0.4 1.0 1.4  2.2];
-kTimeRangeX = [3  4   5   6   7    8];
-kVMaxRangeY = [0  0.4   0.8  1.2   1.6];
-kVMaxRangeX = [0   5    10    20  30];
-kEgoLength = 5;
-%% side vehicle
-velocity_side_front = 22;
-position_side_front = 60;
-velocity_side_rear = 20;
-position_side_rear = -5;
-% front vehicle
-velocity_front = 20;
-position_front = 120;
-%ego
-ego_pos = 0;
-ego_v = 25;
-ego_a = 0;
+
 %%
 tra_score = 100;
 tra_jerk_min = 4;% default
 tra_result = false;
-tra_postion = 0;
-tra_velocity = 0;
-tra_acc = 0;
-tra_direction = 0;
 tra_time = 30;
 tra_coef = zeros(6,1);
-for ti = 3 : 8 % time i is 3 4 5 6 7 8s
-    prediction_position_front = velocity_front * ti + position_front;% ti后的时刻前车的位置    
-    prediction_position_side_front = velocity_side_front * ti + position_side_front;% ti后的时刻侧前车的位置
-    prediction_position_side_rear = velocity_side_rear * ti + position_side_rear;% ti后侧候车的位置
-    safe_front = prediction_position_front - max(velocity_front*0.5, 8);%和前车的安全距离
-    safe_side_front = prediction_position_side_front - velocity_side_front * 0.6;%和侧前车的安全距离
-    safe_side_rear = prediction_position_side_rear + velocity_side_rear * 0.6;%和侧后车的安全距离
-    % anchor point is end state of lane keep 
-    %锚点 自车cut in 目标车道后，进行lane keep 跟随前车
-    %跟车的time gap 1.6秒 跟车的速度是前车
-    postion_anchor = prediction_position_side_front - velocity_side_front * 1.6;
-    velocity_anchor = velocity_side_front;
-    window_gap = min(safe_side_front, safe_front) - safe_side_rear;
-    window_s_start = min(safe_side_front, safe_front);
-    window_s_end = safe_side_rear;
-    if window_gap > kEgoLength 
-        si = window_s_start;
-        while si > window_s_end - SearchSOffset
-            v_min = min(velocity_side_rear - sqrt(2*(si - prediction_position_side_rear)*CrashDeceToRear),...
-                VLimitMin);
-            % consider crash to front vehicle and side front vehicle
-            v_max = min(velocity_side_front + sqrt(2*(prediction_position_side_front - si)*CrashDeceToFront), ...
-                        velocity_front + sqrt(2*(prediction_position_front - si)*CrashDeceToFront));
-            v_max = min(v_max, VLimitMax);
-            if v_max > v_min % sample v gap,v_min -> v_max, and delta_v = 1m/s;
-                vt = v_min;
-                st = si;
-                while vt < v_max
-                    at = GetTargetAcc(postion_anchor - st, vt - velocity_anchor);
-                    [jerk_max, jerk_min, acc_max, acc_min, coef] = GetTrajectory(ego_pos, ego_v, ego_a, st, vt, at, ti);
-                    if jerk_max <= JerkLimitMax && jerk_min >= JerkLimitMin && ...
-                            acc_max <= AccLimitMax && acc_min >= AccLimitMin
-                            tra_jerk_min = max(jerk_max,abs(jerk_min));
-                            % calculate cost of trajectory include jerk
-                            % and time
-                            score = interp1(kJerkRangeX, kJerkRangeY, tra_jerk_min) * JerkWeight ...
-                                + interp1(kTimeRangeX, kTimeRangeY, ti) * TimeWeight ...
-                                + interp1(kVMaxRangeX, kVMaxRangeY, (VLimitMax - vt)) * VMaxWeight;
-                            if score < tra_score
-                                tra_score = score;
-                                tra_result = true;
-                                tra_postion = si;
-                                tra_velocity = vt;
-                                tra_acc = at;
-                                tra_direction = 1;
-                                tra_time = ti;
-                                tra_coef = coef;
-                            end
-                    end
-                    vt = vt + 1;
-                 end
-            end
-            si = si - 6;
-        end
-    end % gap
-end % time
 
-%% figure trajectory 
+%% 自车状态和目标速度
+end_time = 15;%多长时间到大目标位置 目标速度
+%自车状态
+ego_s0 = 20;
+ego_v = 68/3.6;
+ego_a = 0.0;
+%前车的状态
+front_s1 = 100;
+front_v = 0/3.6;
+front_a = 0;
+% end time 时间后
+target_s = front_s1 + front_v * end_time - front_v * 1.5;
+target_v = front_v;
+target_a = 0;
+
+%% 采样的方式
+for ti = 0.01 : 0.5 : 10
+    target_s = front_s1 + front_v * ti - front_v * 1.5;
+    target_v = front_v;
+    target_a = 0;
+    [jerk_max, jerk_min, acc_max, acc_min, coef] = GetTrajectory(ego_s0, ego_v, ego_a,  target_s, target_v, target_a, ti);
+    if jerk_max <= JerkLimitMax && jerk_min >= JerkLimitMin && ...
+            acc_max <= AccLimitMax && acc_min >= AccLimitMin
+            tra_jerk_min = max(jerk_max,abs(jerk_min));
+            % calculate cost of trajectory include jerk
+            score = interp1(kJerkRangeX, kJerkRangeY, tra_jerk_min) * JerkWeight;
+            if score < tra_score
+                tra_score = score;
+                tra_result = true;
+                tra_coef = coef;
+                tra_time = ti;
+            end
+    end
+end
+%% figure trajectory
 if tra_result == true
     time_arr = [];
     position_arr = [];
     velocity_arr = [];
     accelerate_arr = [];
     jerk_arr = [];
-    tra_num = tra_time/0.1; % 0.1 get one point
+    tra_num = round(tra_time/0.1); % 0.1 get one point
     for i = 1:tra_num
         time_arr(i) = i*0.1;
         position_arr(i) = Evaluate(tra_coef, 0, i*0.1);
@@ -116,7 +70,6 @@ if tra_result == true
         accelerate_arr(i) = Evaluate(tra_coef, 2, i*0.1);
         jerk_arr(i) = Evaluate(tra_coef, 3, i*0.1);    
     end
-    cut_in_s = position_arr(tra_num);
     figure(1);
     plot(time_arr,position_arr);
     title('距离S');
@@ -130,6 +83,9 @@ if tra_result == true
     plot(time_arr,jerk_arr);
     title('冲击度jerk');
 end
+
+
+
 
 %%  calculate s = f(t)
 function [JerkMax, JerkMin, AccMax, AccMin, Coef] = GetTrajectory(s0, v0, a0, st, vt, at, tend)
@@ -199,6 +155,7 @@ function [JerkMax, JerkMin, T0, T1] = CalculateJerkOfTrajectory(tra_coef, Tmax_,
         end  
     end
 end
+
 %% calculate Acc max min 
 function [AccMax, AccMin] = CalculateAccOfTrajectory(tra_coef, Tmax_, Tmin_, T0_, T1_)
     a0 = Evaluate(tra_coef, 2, Tmin_);
@@ -216,7 +173,6 @@ function [AccMax, AccMin] = CalculateAccOfTrajectory(tra_coef, Tmax_, Tmin_, T0_
         AccMin = min(AccMin, a);
     end
 end
-
 %% get value from s = f(t) quintic polynomial
 % order derivation
 % p time of all
@@ -240,6 +196,7 @@ function value = Evaluate(tra_coef, order, p)
             value = 120.0 * tra_coef(6);
     end
 end
+
 %% brief calculate coefficients of quintic polynomial
 %  s = f(t)
 % x0 start point x0 position dx0 velocity ddx0 accelerate 
@@ -263,29 +220,12 @@ function coef = ComputeCoefficients(x0, dx0, ddx0,  x1, dx1, ddx1,  p)
     coef(6) = (6.0 * c0 - 3.0 * c1 + 0.5 * c2) / p2;
 end
 
-%% gcalculate target accelerate
-function acc = GetTargetAcc(delta_s, delta_v)
-    %delta_s  si - s_target 都是相对于前车的距离
-    %delta_v vi - v_target
-    sv_rear1_alpha = 0.05;
-    sv_rear1_kesai = -0.12;
 
-    sv_rear2_alpha = 0.01;
-    sv_rear2_kesai = -0.06;
 
-    sv_rear3_alpha = -0.05;
-    sv_rear3_kesai = 0.1;
 
-    if delta_s > 0 && delta_v > 0
-        acc = max(-delta_v^2/(2 * delta_s)*0.4, -1.5);
-    elseif delta_s <= 0 && delta_v >= 0
-        acc = max(delta_s * sv_rear1_alpha + delta_v * sv_rear1_kesai, -1.5);
-    elseif delta_s >= 0 && delta_v <= 0
-        acc = delta_s * sv_rear2_alpha + delta_v * sv_rear2_kesai;
-    else
-        acc = max(min(delta_s * sv_rear3_alpha + delta_v * sv_rear3_kesai, 1.0), -1.5);
-    end
-end
+
+
+
 
 
 

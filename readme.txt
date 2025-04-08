@@ -1,3 +1,7 @@
-¸Ã·ÖÖ§µÄÁ½¸öÎÄ¼ş¼ĞEMPlannerºÍNormalLaneChange¡£
-1¡¢ÆäÖĞEMplanner ÊÇapolloµÄmÓïÑÔ°æ±¾£¬»ù´¡Ö»ÓĞ¼òµ¥µÄÂ·¾¶¹æ»®µÄqp£¬ËÙ¶ÈµÄdpÔÚÔö¼ÓÖĞ¡£
-2¡¢NormallaneChangeÊÇÀ´Ô´latticeµÄË¼Â·£¬½øĞĞËÙ¶È¹æ»®¡£
+è¯¥åˆ†æ”¯çš„ä¸¤ä¸ªæ–‡ä»¶å¤¹EMPlannerå’ŒNormalLaneChangeã€‚
+1ã€å…¶ä¸­EMplanner æ˜¯apolloçš„mè¯­è¨€ç‰ˆæœ¬ï¼ŒåŸºç¡€åªæœ‰ç®€å•çš„è·¯å¾„è§„åˆ’çš„qpï¼Œé€Ÿåº¦çš„dpåœ¨å¢åŠ ä¸­ã€‚
+2ã€NormallaneChangeæ˜¯æ¥æºlatticeçš„æ€è·¯ï¼Œè¿›è¡Œé€Ÿåº¦è§„åˆ’ã€‚
+
+The two folders of this branch are EMPlanner and NormalLaneChange.
+1. EMplanner is the m language version of apollo, which only has simple path planning qp, and the speed dp is increasing.
+2. NormallaneChange is based on the idea of â€‹â€‹lattice and performs speed planning.
